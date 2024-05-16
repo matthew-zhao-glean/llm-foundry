@@ -9,7 +9,7 @@ from typing import Optional, Tuple, Union
 
 import torch
 from torch.distributed._shard.checkpoint import (
-    dist_cp,
+    load_state_dict,
     FileSystemReader,
 )
 import transformers
@@ -42,7 +42,7 @@ def load_sharded_model_single_gpu(model,model_path):
         "model": model.state_dict()
     }
 
-    dist_cp.load_state_dict(
+    load_state_dict(
                 state_dict=state_dict,
                 storage_reader= FileSystemReader(model_path),
                 no_dist=True,
