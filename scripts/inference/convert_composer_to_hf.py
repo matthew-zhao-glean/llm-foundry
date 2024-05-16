@@ -152,6 +152,7 @@ def write_huggingface_pretrained_from_composer_checkpoint(
         'bf16': torch.bfloat16,
     }[output_precision]
 
+    tmp_dir = None
     # default local path to a tempfile if path is not provided
     if local_checkpoint_save_location is None:
         tmp_dir = tempfile.TemporaryDirectory()
@@ -167,14 +168,18 @@ def write_huggingface_pretrained_from_composer_checkpoint(
         f'Downloading checkpoint from {checkpoint_path} -> {local_checkpoint_save_location}',
     )
     if is_sharded_checkpoint:
+        if not tmp_dir:
+            tmp_dir = tempfile.TemporaryDirectory()
         checkpoint_metadata_path = checkpoint_path + '/.metadata'
-        get_file(checkpoint_metadata_path, local_checkpoint_save_location)
+        local_checkpoint_metadata_save_location = Path(tmp_dir.name) / '.metadata'
+        get_file(checkpoint_metadata_path, local_checkpoint_metadata_save_location)
         for i in range(8):
+            local_checkpoint_save_location = Path(tmp_dir.name) / f'__{i}_0.distcp'
             get_file(
                 checkpoint_path + f'/__{i}_0.distcp',
                 local_checkpoint_save_location,
             )
-        return load_sharded_ckpt(checkpoint_path, output_path, hf_model_path_or_name)
+        return load_sharded_ckpt(tmp_dir.name, output_path, hf_model_path_or_name)
 
     get_file(str(checkpoint_path), str(local_checkpoint_save_location))
 
