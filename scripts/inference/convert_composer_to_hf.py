@@ -61,24 +61,6 @@ def load_sharded_ckpt(
     # (e.g. meta-llama/Llama-2-7b-chat-hf)
     hf_model_path_or_name: str="",
 ):
-    try:
-        file_name = 'train_params.yaml'
-        # Combine the directory and file name to create the full path
-        train_params_path = os.path.join(fsdp_checkpoint_path, file_name)
-        # Open the file with specified encoding
-        with open(train_params_path, 'r', encoding='utf-8') as file:
-            # Load the YAML data
-            data = yaml.safe_load(file)
-
-            # Access the 'model_name' field
-            hf_model_path_or_name = data.get('model_name')
-
-            print(f"Model name: {hf_model_path_or_name}")
-    except FileNotFoundError:
-        print(f"The file {train_params_path} does not exist.")
-        hf_model_path_or_name = input("Please enter the model name: ")
-        print(f"Model name: {hf_model_path_or_name}")
-
     #load the HF model definition from config
     model_def = load_llama_from_config(hf_model_path_or_name)
     print("model is loaded from config")
